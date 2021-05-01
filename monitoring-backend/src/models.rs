@@ -1,5 +1,5 @@
 use super::schema::plant_metrics; // Used to get db schema
-use chrono::{NaiveDateTime, Utc};
+use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
 // Model type used to interact with DBO
@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 // Serialize: Allows serde to serialize the database entry to JSON of this type
 #[derive(Queryable, Serialize)]
 pub struct PlantMetricEntity {
+    pub id: i32,
     #[serde(with = "my_date_format")]
     pub recorded_at: NaiveDateTime,
     pub temperature: Option<f32>,
@@ -21,9 +22,6 @@ pub struct PlantMetricEntity {
 #[table_name = "plant_metrics"] // Table where to insert
 #[serde(deny_unknown_fields)] // Fails if extra fields provided in JSON body
 pub struct PlantMetricInsert {
-    // When deserialising, add the time now as the recorded at time
-    #[serde(skip_deserializing, default = "time_now")]
-    pub recorded_at: NaiveDateTime,
     pub temperature: f32,
     pub humidity: f32,
     pub light: i32,
@@ -50,8 +48,4 @@ mod my_date_format {
             .map_err(serde::de::Error::custom)?
             .naive_utc())
     }
-}
-
-fn time_now() -> NaiveDateTime {
-    Utc::now().naive_utc()
 }

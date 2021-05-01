@@ -1,5 +1,6 @@
 table! {
-    plant_metrics (recorded_at) {
+    plant_metrics (id) {
+        id -> Int4,
         recorded_at -> Timestamp,
         temperature -> Nullable<Float4>,
         humidity -> Nullable<Float4>,
