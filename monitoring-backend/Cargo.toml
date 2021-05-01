@@ -6,6 +6,7 @@ edition = "2018"
 [dependencies]
 rocket = { git = "https://github.com/SergioBenitez/Rocket", branch = "master" }
 diesel = { version = "1.4.6", features = ["postgres"] }
+diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
 
 [dependencies.rocket_contrib]
