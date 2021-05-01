@@ -1,0 +1,2 @@
+[default.databases.postgres_timeseries]
+url = "postgres://postgres:nomad@localhost/timeseries"
