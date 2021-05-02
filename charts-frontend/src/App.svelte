@@ -1,7 +1,7 @@
 <script lang="ts">
   import Chart from "./Chart.svelte";
   import GetDataButton from "./GetDataButton.svelte";
-  import { temperature } from "./stores";
+  import { temperature, humidity, light, soilMoisture } from "./stores";
 
   $: data = {
     datasets: [
@@ -13,9 +13,25 @@
       },
       {
         label: "Humidity",
-        data: [],
+        data: $humidity,
         fill: false,
         borderColor: "rgb(0, 0, 192)",
+      },
+    ],
+  };
+  $: data2 = {
+    datasets: [
+      {
+        label: "Light",
+        data: $light,
+        fill: false,
+        borderColor: "rgb(0, 192, 0)",
+      },
+      {
+        label: "Soil moisture",
+        data: $soilMoisture,
+        fill: false,
+        borderColor: "rgb(192, 0, 0)",
       },
     ],
   };
@@ -25,6 +41,7 @@
   <h1>Plant Business</h1>
   <GetDataButton />
   <Chart {data} />
+  <Chart data={data2} />
 </main>
 
 <style>
