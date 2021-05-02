@@ -1,6 +1,6 @@
 use super::schema::plant_metrics; // Used to get db schema
 use chrono::NaiveDateTime;
-use serde::{ser::SerializeMap, Deserialize, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 use std::collections::HashMap;
 
@@ -52,18 +52,23 @@ pub mod my_date_format {
     }
 }
 
+#[derive(Serialize)]
 pub struct Temperatures {
+    #[serde(with = "time_map")]
     pub temperatures: HashMap<NaiveDateTime, f32>,
 }
 
-use chrono::{DateTime, Utc};
-impl Serialize for Temperatures {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let mut map = serializer.serialize_map(Some(self.temperatures.len()))?;
-        for (k, v) in &self.temperatures {
+pub mod time_map {
+    use chrono::{DateTime, NaiveDateTime, Utc};
+    use serde::{ser::SerializeMap, Serialize, Serializer};
+    use std::collections::HashMap;
+
+    pub fn serialize<S: Serializer, T: Serialize>(
+        timemap: &HashMap<NaiveDateTime, T>,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        let mut map = serializer.serialize_map(Some(timemap.len()))?;
+        for (k, v) in timemap {
             let s = DateTime::<Utc>::from_utc(*k, Utc).to_rfc3339();
             map.serialize_entry(&s, &v)?;
         }
