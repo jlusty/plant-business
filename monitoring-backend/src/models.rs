@@ -34,11 +34,15 @@ pub mod my_date_format {
     use chrono::{DateTime, NaiveDateTime, Utc};
     use serde::{Deserialize, Deserializer, Serializer};
 
+    pub fn get_datetime_string(time: &NaiveDateTime) -> String {
+        DateTime::<Utc>::from_utc(*time, Utc).to_rfc3339()
+    }
+
     pub fn serialize<S: Serializer>(
         time: &NaiveDateTime,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        let s = DateTime::<Utc>::from_utc(*time, Utc).to_rfc3339();
+        let s = get_datetime_string(time);
         serializer.serialize_str(&s)
     }
 
@@ -59,17 +63,18 @@ pub struct Temperatures {
 }
 
 pub mod time_map {
-    use chrono::{DateTime, NaiveDateTime, Utc};
+    use super::my_date_format;
+    use chrono::NaiveDateTime;
     use serde::{ser::SerializeMap, Serialize, Serializer};
     use std::collections::HashMap;
 
-    pub fn serialize<S: Serializer, T: Serialize>(
-        timemap: &HashMap<NaiveDateTime, T>,
+    pub fn serialize<S: Serializer, V: Serialize>(
+        timemap: &HashMap<NaiveDateTime, V>,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
         let mut map = serializer.serialize_map(Some(timemap.len()))?;
         for (k, v) in timemap {
-            let s = DateTime::<Utc>::from_utc(*k, Utc).to_rfc3339();
+            let s = my_date_format::get_datetime_string(k);
             map.serialize_entry(&s, &v)?;
         }
         map.end()
