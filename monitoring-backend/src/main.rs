@@ -12,8 +12,8 @@ extern crate dotenv;
 mod models;
 mod schema;
 
-use crate::models::{PlantMetricEntity, PlantMetricInsert};
-use chrono::DateTime;
+use crate::models::{PlantMetricEntity, PlantMetricInsert, Temperatures};
+use chrono::{DateTime, NaiveDateTime};
 use diesel::prelude::*;
 use dotenv::dotenv;
 use rocket::{
@@ -23,6 +23,8 @@ use rocket::{
 };
 use rocket_contrib::{databases::diesel as rocket_diesel, json::Json};
 use schema::plant_metrics; // Used to get db schema
+
+type Result<T, E = Debug<diesel::result::Error>> = std::result::Result<T, E>;
 
 // Used to connect Rocket to the PostgreSQL database
 #[database("postgres_timeseries")]
@@ -53,7 +55,12 @@ pub fn stage() -> AdHoc {
             .attach(AdHoc::on_ignite("Run diesel migrations", run_migrations))
             .mount(
                 "/db",
-                routes![post_metric, get_metric_by_id, get_metric_by_time],
+                routes![
+                    post_metric,
+                    get_metric_by_id,
+                    get_metric_by_time,
+                    get_temperatures
+                ],
             )
     })
 }
@@ -66,6 +73,23 @@ fn rocket() -> _ {
 
 #[get("/health")]
 fn health() {}
+
+#[post("/metric", format = "json", data = "<metric>")]
+async fn post_metric(
+    metric: Json<PlantMetricInsert>,
+    conn: TimeseriesDbConn,
+) -> Result<Created<Json<PlantMetricEntity>>> {
+    let metric_value = metric.clone();
+    let r = conn
+        .run(move |conn| {
+            diesel::insert_into(plant_metrics::table)
+                .values(&metric_value)
+                .get_result(conn)
+        })
+        .await?;
+
+    Ok(Created::new("/").body(Json(r)))
+}
 
 #[get("/metric/<id>")]
 async fn get_metric_by_id(id: i32, conn: TimeseriesDbConn) -> Option<Json<PlantMetricEntity>> {
@@ -98,19 +122,22 @@ async fn get_metric_by_time(
     .ok()
 }
 
-#[post("/metric", format = "json", data = "<metric>")]
-async fn post_metric(
-    metric: Json<PlantMetricInsert>,
-    conn: TimeseriesDbConn,
-) -> Result<Created<Json<PlantMetricEntity>>, Debug<diesel::result::Error>> {
-    let metric_value = metric.clone();
-    let r = conn
+#[get("/data/temperature")]
+async fn get_temperatures(conn: TimeseriesDbConn) -> Option<Json<Temperatures>> {
+    let temperatures_vec: Vec<(NaiveDateTime, Option<f32>)> = conn
         .run(move |conn| {
-            diesel::insert_into(plant_metrics::table)
-                .values(&metric_value)
-                .get_result(conn)
+            plant_metrics::table
+                .filter(plant_metrics::temperature.is_not_null())
+                .order(plant_metrics::recorded_at.desc())
+                .select((plant_metrics::recorded_at, plant_metrics::temperature))
+                .load::<(NaiveDateTime, Option<f32>)>(conn)
         })
-        .await?;
+        .await
+        .ok()?;
 
-    Ok(Created::new("/").body(Json(r)))
+    let temperatures = temperatures_vec
+        .into_iter()
+        .filter_map(|(time, temp)| temp.map(|t| (time, t)))
+        .collect();
+    Some(Json(Temperatures { temperatures }))
 }

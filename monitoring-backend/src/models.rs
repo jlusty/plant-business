@@ -1,6 +1,8 @@
 use super::schema::plant_metrics; // Used to get db schema
 use chrono::NaiveDateTime;
-use serde::{Deserialize, Serialize};
+use serde::{ser::SerializeMap, Deserialize, Serialize, Serializer};
+
+use std::collections::HashMap;
 
 // Model type used to interact with DBO
 // Queryable: Allows diesel to get this type back when querying the DB
@@ -28,7 +30,7 @@ pub struct PlantMetricInsert {
     pub soil_moisture: i32,
 }
 
-mod my_date_format {
+pub mod my_date_format {
     use chrono::{DateTime, NaiveDateTime, Utc};
     use serde::{Deserialize, Deserializer, Serializer};
 
@@ -47,5 +49,24 @@ mod my_date_format {
         Ok(DateTime::parse_from_rfc3339(&time)
             .map_err(serde::de::Error::custom)?
             .naive_utc())
+    }
+}
+
+pub struct Temperatures {
+    pub temperatures: HashMap<NaiveDateTime, f32>,
+}
+
+use chrono::{DateTime, Utc};
+impl Serialize for Temperatures {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut map = serializer.serialize_map(Some(self.temperatures.len()))?;
+        for (k, v) in &self.temperatures {
+            let s = DateTime::<Utc>::from_utc(*k, Utc).to_rfc3339();
+            map.serialize_entry(&s, &v)?;
+        }
+        map.end()
     }
 }
