@@ -2,8 +2,6 @@ use super::schema::plant_metrics; // Used to get db schema
 use chrono::NaiveDateTime;
 use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
-
 // Model type used to interact with DBO
 // Queryable: Allows diesel to get this type back when querying the DB
 // Serialize: Allows serde to serialize the database entry to JSON of this type
@@ -50,41 +48,53 @@ pub mod naive_date_time_serializer {
 #[derive(Serialize)]
 pub struct TimeseriesData {
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(with = "timeseries_map")]
-    pub temperature: Option<HashMap<NaiveDateTime, f32>>,
+    #[serde(with = "timeseries_vec")]
+    pub temperature: Option<Vec<DataEntry<f32>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(with = "timeseries_map")]
-    pub humidity: Option<HashMap<NaiveDateTime, f32>>,
+    #[serde(with = "timeseries_vec")]
+    pub humidity: Option<Vec<DataEntry<f32>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(with = "timeseries_map")]
-    pub light: Option<HashMap<NaiveDateTime, i32>>,
+    #[serde(with = "timeseries_vec")]
+    pub light: Option<Vec<DataEntry<i32>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(with = "timeseries_map")]
-    pub soil_moisture: Option<HashMap<NaiveDateTime, i32>>,
+    #[serde(with = "timeseries_vec")]
+    pub soil_moisture: Option<Vec<DataEntry<i32>>>,
 }
 
-pub mod timeseries_map {
-    use super::naive_date_time_serializer;
-    use chrono::NaiveDateTime;
-    use serde::{ser::SerializeMap, Serialize, Serializer};
-    use std::collections::HashMap;
+pub struct DataEntry<T> {
+    pub time: NaiveDateTime,
+    pub data: T,
+}
+
+pub mod timeseries_vec {
+    use super::{naive_date_time_serializer, DataEntry};
+    use serde::{ser::SerializeSeq, Serialize, Serializer};
+
+    #[derive(Serialize)]
+    pub struct SerializedDataEntry<T: Serialize> {
+        time: String,
+        data: T,
+    }
 
     pub fn serialize<S: Serializer, V: Serialize>(
-        timemap_opt: &Option<HashMap<NaiveDateTime, V>>,
+        timevec_opt: &Option<Vec<DataEntry<V>>>,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        match timemap_opt {
-            Some(timemap) => {
-                let mut map = serializer.serialize_map(Some(timemap.len()))?;
-                for (k, v) in timemap {
-                    let s = naive_date_time_serializer::get_datetime_string(k);
-                    map.serialize_entry(&s, &v)?;
+        match timevec_opt {
+            Some(timevec) => {
+                let mut seq = serializer.serialize_seq(Some(timevec.len()))?;
+                for e in timevec {
+                    let s = naive_date_time_serializer::get_datetime_string(&e.time);
+                    seq.serialize_element(&SerializedDataEntry {
+                        time: s,
+                        data: &e.data,
+                    })?;
                 }
-                map.end()
+                seq.end()
             }
             None => {
                 // Serialise to empty map
-                serializer.serialize_map(Some(0))?.end()
+                serializer.serialize_seq(Some(0))?.end()
             }
         }
     }

@@ -1,4 +1,8 @@
-use crate::{models::TimeseriesData, schema::plant_metrics, TimeseriesDbConn};
+use crate::{
+    models::{DataEntry, TimeseriesData},
+    schema::plant_metrics,
+    TimeseriesDbConn,
+};
 use chrono::NaiveDateTime;
 use diesel::prelude::*;
 use rocket::Route;
@@ -20,7 +24,7 @@ async fn get_temperatures(conn: TimeseriesDbConn) -> Option<Json<TimeseriesData>
 
     let temperatures = temperatures_vec
         .into_iter()
-        .filter_map(|(time, temp)| temp.map(|t| (time, t)))
+        .filter_map(|(time, temp)| temp.map(|data| DataEntry { time, data }))
         .collect();
     Some(Json(TimeseriesData {
         temperature: Some(temperatures),
@@ -45,7 +49,7 @@ async fn get_humidity(conn: TimeseriesDbConn) -> Option<Json<TimeseriesData>> {
 
     let humidity = humidity_vec
         .into_iter()
-        .filter_map(|(time, temp)| temp.map(|t| (time, t)))
+        .filter_map(|(time, temp)| temp.map(|data| DataEntry { time, data }))
         .collect();
     Some(Json(TimeseriesData {
         temperature: None,
@@ -70,7 +74,7 @@ async fn get_light(conn: TimeseriesDbConn) -> Option<Json<TimeseriesData>> {
 
     let light = light_vec
         .into_iter()
-        .filter_map(|(time, temp)| temp.map(|t| (time, t)))
+        .filter_map(|(time, temp)| temp.map(|data| DataEntry { time, data }))
         .collect();
     Some(Json(TimeseriesData {
         temperature: None,
@@ -95,7 +99,7 @@ async fn get_soil_moisture(conn: TimeseriesDbConn) -> Option<Json<TimeseriesData
 
     let soil_moisture = soil_moisture_vec
         .into_iter()
-        .filter_map(|(time, temp)| temp.map(|t| (time, t)))
+        .filter_map(|(time, temp)| temp.map(|data| DataEntry { time, data }))
         .collect();
     Some(Json(TimeseriesData {
         temperature: None,
