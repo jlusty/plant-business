@@ -1,10 +1,30 @@
 <script lang="ts">
   import Chart from "./Chart.svelte";
+  import GetDataButton from "./GetDataButton.svelte";
+  import { temperature } from "./stores";
+
+  $: data = {
+    datasets: [
+      {
+        label: "Temperature",
+        data: $temperature,
+        fill: false,
+        borderColor: "rgb(75, 192, 192)",
+      },
+      {
+        label: "Humidity",
+        data: [],
+        fill: false,
+        borderColor: "rgb(0, 0, 192)",
+      },
+    ],
+  };
 </script>
 
 <main>
   <h1>Plant Business</h1>
-  <Chart />
+  <GetDataButton />
+  <Chart {data} />
 </main>
 
 <style>
