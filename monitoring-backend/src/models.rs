@@ -10,7 +10,7 @@ use std::collections::HashMap;
 #[derive(Queryable, Serialize)]
 pub struct PlantMetricEntity {
     pub id: i32,
-    #[serde(with = "my_date_format")]
+    #[serde(with = "naive_date_time_serializer")]
     pub recorded_at: NaiveDateTime,
     pub temperature: Option<f32>,
     pub humidity: Option<f32>,
@@ -30,9 +30,9 @@ pub struct PlantMetricInsert {
     pub soil_moisture: i32,
 }
 
-pub mod my_date_format {
+pub mod naive_date_time_serializer {
     use chrono::{DateTime, NaiveDateTime, Utc};
-    use serde::{Deserialize, Deserializer, Serializer};
+    use serde::Serializer;
 
     pub fn get_datetime_string(time: &NaiveDateTime) -> String {
         DateTime::<Utc>::from_utc(*time, Utc).to_rfc3339()
@@ -45,38 +45,47 @@ pub mod my_date_format {
         let s = get_datetime_string(time);
         serializer.serialize_str(&s)
     }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(
-        deserializer: D,
-    ) -> Result<NaiveDateTime, D::Error> {
-        let time: String = Deserialize::deserialize(deserializer)?;
-        Ok(DateTime::parse_from_rfc3339(&time)
-            .map_err(serde::de::Error::custom)?
-            .naive_utc())
-    }
 }
 
 #[derive(Serialize)]
-pub struct Temperatures {
-    #[serde(with = "time_map")]
-    pub temperatures: HashMap<NaiveDateTime, f32>,
+pub struct TimeseriesData {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(with = "timeseries_map")]
+    pub temperature: Option<HashMap<NaiveDateTime, f32>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(with = "timeseries_map")]
+    pub humidity: Option<HashMap<NaiveDateTime, f32>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(with = "timeseries_map")]
+    pub light: Option<HashMap<NaiveDateTime, i32>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(with = "timeseries_map")]
+    pub soil_moisture: Option<HashMap<NaiveDateTime, i32>>,
 }
 
-pub mod time_map {
-    use super::my_date_format;
+pub mod timeseries_map {
+    use super::naive_date_time_serializer;
     use chrono::NaiveDateTime;
     use serde::{ser::SerializeMap, Serialize, Serializer};
     use std::collections::HashMap;
 
     pub fn serialize<S: Serializer, V: Serialize>(
-        timemap: &HashMap<NaiveDateTime, V>,
+        timemap_opt: &Option<HashMap<NaiveDateTime, V>>,
         serializer: S,
     ) -> Result<S::Ok, S::Error> {
-        let mut map = serializer.serialize_map(Some(timemap.len()))?;
-        for (k, v) in timemap {
-            let s = my_date_format::get_datetime_string(k);
-            map.serialize_entry(&s, &v)?;
+        match timemap_opt {
+            Some(timemap) => {
+                let mut map = serializer.serialize_map(Some(timemap.len()))?;
+                for (k, v) in timemap {
+                    let s = naive_date_time_serializer::get_datetime_string(k);
+                    map.serialize_entry(&s, &v)?;
+                }
+                map.end()
+            }
+            None => {
+                // Serialise to empty map
+                serializer.serialize_map(Some(0))?.end()
+            }
         }
-        map.end()
     }
 }
