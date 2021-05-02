@@ -1,27 +1,25 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  // import {
-  //   Chart,
-  //   LineElement,
-  //   LineController,
-  //   CategoryScale,
-  //   LinearScale,
-  //   TimeScale,
-  //   PointElement,
-  //   Tooltip,
-  // } from "chart.js";
+  import { enGB } from "date-fns/locale";
+  import "chartjs-adapter-date-fns";
+  import {
+    Chart,
+    LineElement,
+    LineController,
+    LinearScale,
+    TimeScale,
+    PointElement,
+    Tooltip,
+  } from "chart.js";
 
-  // Chart.register(
-  //   LineElement,
-  //   LineController,
-  //   CategoryScale,
-  //   LinearScale,
-  //   TimeScale,
-  //   PointElement,
-  //   Tooltip
-  // );
-  import Chart from "chart.js/auto";
-
+  Chart.register(
+    LineElement,
+    LineController,
+    LinearScale,
+    TimeScale,
+    PointElement,
+    Tooltip
+  );
   Chart.overrides.line.spanGaps = true;
 
   let canvasElement: HTMLCanvasElement;
@@ -69,7 +67,7 @@
         data: 0.1,
       },
       {
-        time: "2021-05-01T23:30:43.490076+00:00",
+        time: "2021-05-01T21:30:43.490076+00:00",
         data: 0.1,
       },
     ],
@@ -87,9 +85,6 @@
       },
     ],
   };
-
-  import { enGB } from "date-fns/locale";
-  import "chartjs-adapter-date-fns";
 
   onMount(() => {
     new Chart(canvasElement, {
@@ -119,11 +114,13 @@
           x: {
             type: "time",
             adapters: { date: { locale: enGB } },
-            // time: {
-            //   displayFormats: {
-            //     quarter: "MMM YYYY",
-            //   },
-            // },
+            time: {
+              unit: "hour",
+              displayFormats: {
+                hour: "HH:mm",
+              },
+            },
+            ticks: { major: { enabled: true } },
           },
         },
       },
