@@ -16,7 +16,10 @@ mod schema;
 
 use dotenv::dotenv;
 use rocket::{fairing::AdHoc, Build, Rocket};
-use rocket_contrib::databases::diesel as rocket_diesel;
+use rocket_contrib::{
+    databases::diesel as rocket_diesel,
+    serve::{crate_relative, StaticFiles},
+};
 
 // Used to connect Rocket to the PostgreSQL database
 #[database("postgres_timeseries")]
@@ -53,8 +56,11 @@ pub fn stage() -> AdHoc {
 #[launch]
 fn rocket() -> _ {
     dotenv().ok();
-    rocket::build().attach(stage()).mount("/", routes![health])
+    rocket::build()
+        .attach(stage())
+        .mount("/health", routes![health])
+        .mount("/", StaticFiles::from(crate_relative!("static")))
 }
 
-#[get("/health")]
+#[get("/")]
 fn health() {}
