@@ -1,7 +1,8 @@
+import { DATA_SERVER_IP } from "./constants";
 import { temperature, humidity, light, soilMoisture } from "./stores";
 
 export const refreshData = () => {
-  fetch("http://localhost:8000/db/data/temperature")
+  fetch(`http://${DATA_SERVER_IP}/db/data/temperature`)
     .then((res) => res.json())
     .then((res) =>
       temperature.update(({ isVisible }) => ({
@@ -9,7 +10,7 @@ export const refreshData = () => {
         data: res.temperature,
       }))
     );
-  fetch("http://localhost:8000/db/data/humidity")
+  fetch(`http://${DATA_SERVER_IP}/db/data/humidity`)
     .then((res) => res.json())
     .then((res) =>
       humidity.update(({ isVisible }) => ({
@@ -17,7 +18,7 @@ export const refreshData = () => {
         data: res.humidity,
       }))
     );
-  fetch("http://localhost:8000/db/data/light")
+  fetch(`http://${DATA_SERVER_IP}/db/data/light`)
     .then((res) => res.json())
     .then((res) =>
       light.update(({ isVisible }) => ({
@@ -25,7 +26,7 @@ export const refreshData = () => {
         data: res.light,
       }))
     );
-  fetch("http://localhost:8000/db/data/soilmoisture")
+  fetch(`http://${DATA_SERVER_IP}/db/data/soilmoisture`)
     .then((res) => res.json())
     .then((res) =>
       soilMoisture.update(({ isVisible }) => ({
