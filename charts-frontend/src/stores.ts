@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 
-export const temperature = writable([]);
-export const humidity = writable([]);
-export const light = writable([]);
-export const soilMoisture = writable([]);
+export const temperature = writable({ isVisible: true, data: [] });
+export const humidity = writable({ isVisible: true, data: [] });
+export const light = writable({ isVisible: true, data: [] });
+export const soilMoisture = writable({ isVisible: true, data: [] });

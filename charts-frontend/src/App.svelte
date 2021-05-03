@@ -1,39 +1,44 @@
 <script lang="ts">
+  import NavBar from "./NavBar.svelte";
   import Chart from "./Chart.svelte";
   import GetDataButton from "./GetDataButton.svelte";
   import { temperature, humidity, light, soilMoisture } from "./stores";
 
+  $: datasets = [
+    {
+      label: "Temperature",
+      data: $temperature.data,
+      isVisible: $temperature.isVisible,
+      fill: false,
+      borderColor: "rgb(75, 192, 192)",
+    },
+    {
+      label: "Humidity",
+      data: $humidity.data,
+      isVisible: $humidity.isVisible,
+      fill: false,
+      borderColor: "rgb(0, 0, 192)",
+    },
+    {
+      label: "Light",
+      data: $light.data,
+      isVisible: $light.isVisible,
+      fill: false,
+      borderColor: "rgb(0, 192, 0)",
+    },
+    {
+      label: "Soil moisture",
+      data: $soilMoisture.data,
+      isVisible: $soilMoisture.isVisible,
+      fill: false,
+      borderColor: "rgb(192, 0, 0)",
+    },
+  ];
+
   $: data = {
-    datasets: [
-      {
-        label: "Temperature",
-        data: $temperature,
-        fill: false,
-        borderColor: "rgb(75, 192, 192)",
-      },
-      {
-        label: "Humidity",
-        data: $humidity,
-        fill: false,
-        borderColor: "rgb(0, 0, 192)",
-      },
-    ],
-  };
-  $: data2 = {
-    datasets: [
-      {
-        label: "Light",
-        data: $light,
-        fill: false,
-        borderColor: "rgb(0, 192, 0)",
-      },
-      {
-        label: "Soil moisture",
-        data: $soilMoisture,
-        fill: false,
-        borderColor: "rgb(192, 0, 0)",
-      },
-    ],
+    datasets: datasets
+      .filter((d) => d.isVisible)
+      .map(({ isVisible, ...d }) => d),
   };
 </script>
 
@@ -42,24 +47,7 @@
     <div class="row">
       <div class="col-2 text-white bg-dark sidebar">
         <div class="position-sticky">
-          <div class="list-group-flush py-4">
-            <label class="list-group-item text-white bg-dark">
-              <input class="form-check-input me-1 " type="checkbox" value="" />
-              First checkbox
-            </label>
-            <label class="list-group-item text-white bg-dark">
-              <input class="form-check-input me-1" type="checkbox" value="" />
-              Second checkbox
-            </label>
-            <label class="list-group-item text-white bg-dark">
-              <input class="form-check-input me-1" type="checkbox" value="" />
-              Third checkbox
-            </label>
-            <label class="list-group-item text-white bg-dark">
-              <input class="form-check-input me-1" type="checkbox" value="" />
-              Fourth checkbox
-            </label>
-          </div>
+          <NavBar />
         </div>
       </div>
       <div class="col-10 px-4 ms-auto">
@@ -75,7 +63,6 @@
           </div>
         </div>
         <Chart {data} />
-        <Chart data={data2} />
       </div>
     </div>
   </div>
