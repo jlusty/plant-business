@@ -42,6 +42,19 @@ async fn get_metric_by_id(id: i32, conn: TimeseriesDbConn) -> Option<Json<PlantM
     .ok()
 }
 
+#[delete("/<id>")]
+async fn delete_metric_by_id(id: i32, conn: TimeseriesDbConn) -> Result<Option<()>> {
+    let affected = conn
+        .run(move |conn| {
+            diesel::delete(plant_metrics::table)
+                .filter(plant_metrics::id.eq(id))
+                .execute(conn)
+        })
+        .await?;
+
+    Ok((affected == 1).then(|| ()))
+}
+
 #[get("/time/<time>")]
 async fn get_metric_by_time(
     time: String,
@@ -62,5 +75,10 @@ async fn get_metric_by_time(
 }
 
 pub fn routes() -> Vec<Route> {
-    routes![post_metric, get_metric_by_id, get_metric_by_time]
+    routes![
+        post_metric,
+        get_metric_by_id,
+        delete_metric_by_id,
+        get_metric_by_time
+    ]
 }
