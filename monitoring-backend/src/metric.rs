@@ -1,5 +1,5 @@
 use crate::{
-    models::{PlantMetricEntity, PlantMetricInsert},
+    models::{naive_date_time_serializer, PlantMetricEntity, PlantMetricInsert},
     schema::plant_metrics,
     TimeseriesDbConn,
 };
@@ -56,7 +56,7 @@ async fn delete_metric_by_id(id: i32, conn: TimeseriesDbConn) -> Result<Option<(
 }
 
 #[get("/time/<time>")]
-async fn get_metric_by_time(
+async fn get_metric_at_time(
     time: String,
     conn: TimeseriesDbConn,
 ) -> Option<Json<PlantMetricEntity>> {
@@ -74,11 +74,60 @@ async fn get_metric_by_time(
     .ok()
 }
 
+#[get("/time/before/<time>")]
+async fn get_metric_before_time(
+    time: String,
+    conn: TimeseriesDbConn,
+) -> Option<Json<Vec<PlantMetricEntity>>> {
+    let parsed_time = match DateTime::parse_from_rfc3339(&time) {
+        Ok(t) => t,
+        Err(_) => return None,
+    };
+    conn.run(move |conn| {
+        plant_metrics::table
+            .filter(plant_metrics::recorded_at.le(parsed_time.naive_utc()))
+            .get_results(conn)
+    })
+    .await
+    .map(Json)
+    .ok()
+}
+
+#[delete("/time/before/<time>")]
+async fn delete_metric_before_time(
+    time: String,
+    conn: TimeseriesDbConn,
+) -> Option<Json<Vec<String>>> {
+    // TODO: Should return Error instead of Option
+    let parsed_time = match DateTime::parse_from_rfc3339(&time) {
+        Ok(t) => t,
+        Err(_) => return None,
+    };
+    conn.run(move |conn| {
+        diesel::delete(
+            plant_metrics::table.filter(plant_metrics::recorded_at.le(parsed_time.naive_utc())),
+        )
+        .get_results(conn)
+    })
+    .await
+    .map(|metric_vec: Vec<PlantMetricEntity>| {
+        Json(
+            metric_vec
+                .into_iter()
+                .map(|metric| naive_date_time_serializer::get_datetime_string(&metric.recorded_at))
+                .collect(),
+        )
+    })
+    .ok()
+}
+
 pub fn routes() -> Vec<Route> {
     routes![
         post_metric,
         get_metric_by_id,
         delete_metric_by_id,
-        get_metric_by_time
+        get_metric_at_time,
+        get_metric_before_time,
+        delete_metric_before_time
     ]
 }
