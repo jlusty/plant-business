@@ -64,4 +64,6 @@
   });
 </script>
 
-<canvas bind:this={canvasElement} width={100} height={30} />
+<div class="py-2 px-5">
+  <canvas bind:this={canvasElement} width={100} height={50} />
+</div>

@@ -97,7 +97,8 @@ export default {
 
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production && livereload("../monitoring-backend/static"),
+    !production &&
+      livereload({ watch: "../monitoring-backend/static", wait: 500 }),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify

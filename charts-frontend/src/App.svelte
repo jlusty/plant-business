@@ -38,29 +38,22 @@
 </script>
 
 <main>
-  <h1>Plant Business</h1>
-  <GetDataButton />
-  <Chart {data} />
-  <Chart data={data2} />
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-2 text-white bg-dark">A column</div>
+      <div class="col-10">
+        <div class="row">
+          <div class="col-2" />
+          <div class="col">
+            <h1 class="py-3 text-center text-success">Plant Business</h1>
+          </div>
+          <div class="col-2 d-flex justify-content-center align-items-center">
+            <GetDataButton />
+          </div>
+        </div>
+        <Chart {data} />
+        <Chart data={data2} />
+      </div>
+    </div>
+  </div>
 </main>
-
-<style>
-  main {
-    text-align: center;
-    padding: 1em;
-    max-width: 240px;
-    margin: 0 auto;
-  }
-
-  h1 {
-    color: #13880f;
-    font-size: 3em;
-    font-weight: 100;
-  }
-
-  @media (min-width: 640px) {
-    main {
-      max-width: none;
-    }
-  }
-</style>

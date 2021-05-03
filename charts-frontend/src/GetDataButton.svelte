@@ -17,4 +17,6 @@
   };
 </script>
 
-<button on:click={handleClick}>Get Data</button>
+<button type="button" class="btn btn-primary" on:click={handleClick}
+  >Get Data</button
+>
