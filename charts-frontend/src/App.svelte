@@ -40,12 +40,35 @@
 <main>
   <div class="container-fluid">
     <div class="row">
-      <div class="col-2 text-white bg-dark">A column</div>
-      <div class="col-10">
-        <div class="row">
+      <div class="col-2 text-white bg-dark sidebar">
+        <div class="position-sticky">
+          <div class="list-group-flush py-4">
+            <label class="list-group-item text-white bg-dark">
+              <input class="form-check-input me-1 " type="checkbox" value="" />
+              First checkbox
+            </label>
+            <label class="list-group-item text-white bg-dark">
+              <input class="form-check-input me-1" type="checkbox" value="" />
+              Second checkbox
+            </label>
+            <label class="list-group-item text-white bg-dark">
+              <input class="form-check-input me-1" type="checkbox" value="" />
+              Third checkbox
+            </label>
+            <label class="list-group-item text-white bg-dark">
+              <input class="form-check-input me-1" type="checkbox" value="" />
+              Fourth checkbox
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="col-10 px-4 ms-auto">
+        <div class="row border-bottom">
           <div class="col-2" />
           <div class="col">
-            <h1 class="py-3 text-center text-success">Plant Business</h1>
+            <h1 class="py-3 display-2 text-center text-success">
+              Plant Business
+            </h1>
           </div>
           <div class="col-2 d-flex justify-content-center align-items-center">
             <GetDataButton />
