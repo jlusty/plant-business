@@ -2,7 +2,13 @@
   import NavBar from "./NavBar.svelte";
   import Chart from "./Chart.svelte";
   import GetDataButton from "./RefreshButton.svelte";
-  import { temperature, humidity, light, soilMoisture } from "./stores";
+  import {
+    temperature,
+    humidity,
+    light,
+    soilMoisture,
+    relativeScale,
+  } from "./stores";
   import { onMount } from "svelte";
   import { refreshData } from "./refreshData";
 
@@ -37,10 +43,25 @@
     },
   ];
 
+  $: maxValue = Math.max(
+    ...datasets.flatMap((d) => {
+      return d.data.map((entry) => entry.data);
+    })
+  );
+
   $: data = {
     datasets: datasets
       .filter((d) => d.isVisible)
-      .map(({ isVisible, ...d }) => d),
+      .map(({ isVisible, ...d }) => {
+        if ($relativeScale) {
+          d.data = d.data.map(({ time, data }) => ({
+            time,
+            data: data / maxValue,
+          }));
+        }
+        console.log(`d is ${JSON.stringify(d)}`);
+        return d;
+      }),
   };
 
   onMount(() => refreshData());
@@ -71,3 +92,12 @@
     </div>
   </div>
 </main>
+
+<style>
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+  }
+</style>
