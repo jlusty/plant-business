@@ -1,8 +1,10 @@
 <script lang="ts">
   import NavBar from "./NavBar.svelte";
   import Chart from "./Chart.svelte";
-  import GetDataButton from "./GetDataButton.svelte";
+  import GetDataButton from "./RefreshButton.svelte";
   import { temperature, humidity, light, soilMoisture } from "./stores";
+  import { onMount } from "svelte";
+  import { refreshData } from "./refreshData";
 
   $: datasets = [
     {
@@ -40,6 +42,8 @@
       .filter((d) => d.isVisible)
       .map(({ isVisible, ...d }) => d),
   };
+
+  onMount(() => refreshData());
 </script>
 
 <main>
