@@ -4,7 +4,7 @@ use crate::{
     TimeseriesDbConn,
 };
 use chrono::DateTime;
-use diesel::prelude::*;
+use diesel::{prelude::*, result::Error as DieselError};
 use rocket::{
     response::{status::Created, Debug},
     Route,
@@ -97,28 +97,25 @@ async fn get_metric_before_time(
 async fn delete_metric_before_time(
     time: String,
     conn: TimeseriesDbConn,
-) -> Option<Json<Vec<String>>> {
-    // TODO: Should return Error instead of Option
+) -> Result<Json<Vec<String>>> {
     let parsed_time = match DateTime::parse_from_rfc3339(&time) {
         Ok(t) => t,
-        Err(_) => return None,
+        Err(_) => return Err(Debug::from(DieselError::NotFound)), // TODO: Handle error type better
     };
-    conn.run(move |conn| {
-        diesel::delete(
-            plant_metrics::table.filter(plant_metrics::recorded_at.le(parsed_time.naive_utc())),
-        )
-        .get_results(conn)
-    })
-    .await
-    .map(|metric_vec: Vec<PlantMetricEntity>| {
-        Json(
-            metric_vec
-                .into_iter()
-                .map(|metric| naive_date_time_serializer::get_datetime_string(&metric.recorded_at))
-                .collect(),
-        )
-    })
-    .ok()
+    let affected: Vec<PlantMetricEntity> = conn
+        .run(move |conn| {
+            diesel::delete(
+                plant_metrics::table.filter(plant_metrics::recorded_at.le(parsed_time.naive_utc())),
+            )
+            .get_results(conn)
+        })
+        .await?;
+    Ok(Json(
+        affected
+            .into_iter()
+            .map(|metric| naive_date_time_serializer::get_datetime_string(&metric.recorded_at))
+            .collect(),
+    ))
 }
 
 pub fn routes() -> Vec<Route> {
