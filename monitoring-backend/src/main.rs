@@ -15,11 +15,12 @@ mod models;
 mod schema;
 
 use dotenv::dotenv;
-use rocket::{fairing::AdHoc, Build, Rocket};
+use rocket::{fairing::AdHoc, http::Method, Build, Rocket};
 use rocket_contrib::{
     databases::diesel as rocket_diesel,
     serve::{crate_relative, StaticFiles},
 };
+use rocket_cors::{Cors, CorsOptions};
 
 // Used to connect Rocket to the PostgreSQL database
 #[database("postgres_timeseries")]
@@ -53,11 +54,24 @@ pub fn stage() -> AdHoc {
     })
 }
 
+pub fn cors() -> Cors {
+    CorsOptions::default()
+        .allowed_methods(
+            vec![Method::Get, Method::Post, Method::Delete]
+                .into_iter()
+                .map(From::from)
+                .collect(),
+        )
+        .to_cors()
+        .expect("Failed to initialise CORS")
+}
+
 #[launch]
 fn rocket() -> _ {
     dotenv().ok();
     rocket::build()
         .attach(stage())
+        .attach(cors())
         .mount("/health", routes![health])
         .mount("/", StaticFiles::from(crate_relative!("static")))
 }
