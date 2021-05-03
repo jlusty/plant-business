@@ -7,8 +7,8 @@
       .then((res) => temperature.set(res.temperature));
     fetch("http://localhost:8000/db/data/humidity")
       .then((res) => res.json())
-      .then((res) => humidity.set(res.light));
-    fetch("http://localhost:8000/db/data/temperature")
+      .then((res) => humidity.set(res.humidity));
+    fetch("http://localhost:8000/db/data/light")
       .then((res) => res.json())
       .then((res) => light.set(res.light));
     fetch("http://localhost:8000/db/data/soilmoisture")
