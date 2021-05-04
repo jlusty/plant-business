@@ -43,23 +43,20 @@
     },
   ];
 
-  $: maxValue = Math.max(
-    ...datasets.flatMap((d) => {
-      return d.data.map((entry) => entry.data);
-    })
-  );
-
   $: data = {
     datasets: datasets
       .filter((d) => d.isVisible)
       .map(({ isVisible, ...d }) => {
         if ($relativeScale) {
+          const dataPoints: number[] = d.data.map(({ data }) => data);
+          const maxValue = Math.max(...dataPoints);
+          const minValue = Math.min(...dataPoints);
+          const divisor = maxValue === minValue ? 1 : maxValue - minValue;
           d.data = d.data.map(({ time, data }) => ({
             time,
-            data: data / maxValue,
+            data: (data - minValue) / divisor,
           }));
         }
-        console.log(`d is ${JSON.stringify(d)}`);
         return d;
       }),
   };
