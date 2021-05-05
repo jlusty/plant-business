@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { refreshData } from "./refreshData";
+  import { getInitialData } from "./refreshData";
 </script>
 
-<button type="button" class="btn btn-primary" on:click={refreshData}
+<button type="button" class="btn btn-primary" on:click={getInitialData}
   >Refresh</button
 >

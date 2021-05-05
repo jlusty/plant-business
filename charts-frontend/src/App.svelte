@@ -2,66 +2,6 @@
   import NavBar from "./NavBar.svelte";
   import Chart from "./Chart.svelte";
   import GetDataButton from "./RefreshButton.svelte";
-  import {
-    temperature,
-    humidity,
-    light,
-    soilMoisture,
-    relativeScale,
-  } from "./stores";
-  import { onMount } from "svelte";
-  import { refreshData } from "./refreshData";
-
-  $: datasets = [
-    {
-      label: "Temperature",
-      data: $temperature.data,
-      isVisible: $temperature.isVisible,
-      fill: false,
-      borderColor: "rgb(75, 192, 192)",
-    },
-    {
-      label: "Humidity",
-      data: $humidity.data,
-      isVisible: $humidity.isVisible,
-      fill: false,
-      borderColor: "rgb(0, 0, 192)",
-    },
-    {
-      label: "Light",
-      data: $light.data,
-      isVisible: $light.isVisible,
-      fill: false,
-      borderColor: "rgb(0, 192, 0)",
-    },
-    {
-      label: "Soil moisture",
-      data: $soilMoisture.data,
-      isVisible: $soilMoisture.isVisible,
-      fill: false,
-      borderColor: "rgb(192, 0, 0)",
-    },
-  ];
-
-  $: data = {
-    datasets: datasets
-      .filter((d) => d.isVisible)
-      .map(({ isVisible, ...d }) => {
-        if ($relativeScale) {
-          const dataPoints: number[] = d.data.map(({ data }) => data);
-          const maxValue = Math.max(...dataPoints);
-          const minValue = Math.min(...dataPoints);
-          const divisor = maxValue === minValue ? 1 : maxValue - minValue;
-          d.data = d.data.map(({ time, data }) => ({
-            time,
-            data: (data - minValue) / divisor,
-          }));
-        }
-        return d;
-      }),
-  };
-
-  onMount(() => refreshData());
 </script>
 
 <main>
@@ -84,7 +24,7 @@
             <GetDataButton />
           </div>
         </div>
-        <Chart {data} />
+        <Chart />
       </div>
     </div>
   </div>
