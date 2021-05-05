@@ -148,4 +148,3 @@
 <div class="py-4 px-3">
   <canvas bind:this={canvasElement} width={100} height={40} />
 </div>
-<button on:click={handleGetDataUpdate}>Update data</button>
