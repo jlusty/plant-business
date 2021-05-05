@@ -104,8 +104,9 @@
             type: "time",
             adapters: { date: { locale: enGB } },
             time: {
-              unit: "hour",
               displayFormats: {
+                second: "ss",
+                minute: "HH:mm",
                 hour: "HH:mm",
               },
             },
@@ -130,7 +131,7 @@
     chart = null;
   });
 
-  const handleGetDataUpdate = async () => {
+  export const handleGetDataUpdate = async () => {
     const dataUpdate = await getUpdateData(maxTimestamp);
     for (const dataset of chart.data.datasets) {
       dataset.data.push(...dataUpdate[(<any>dataset).name]);

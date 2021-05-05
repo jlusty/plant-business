@@ -2,6 +2,8 @@
   import NavBar from "./NavBar.svelte";
   import Chart from "./Chart.svelte";
   import GetDataButton from "./RefreshButton.svelte";
+
+  export let chart;
 </script>
 
 <main>
@@ -21,10 +23,10 @@
             </h1>
           </div>
           <div class="col-2 d-flex justify-content-center align-items-center">
-            <GetDataButton />
+            <GetDataButton {chart} />
           </div>
         </div>
-        <Chart />
+        <Chart bind:this={chart} />
       </div>
     </div>
   </div>

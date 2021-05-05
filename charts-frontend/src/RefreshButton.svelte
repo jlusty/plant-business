@@ -1,7 +1,9 @@
 <script lang="ts">
-  import { getInitialData } from "./refreshData";
+  export let chart;
 </script>
 
-<button type="button" class="btn btn-primary" on:click={getInitialData}
-  >Refresh</button
+<button
+  type="button"
+  class="btn btn-primary"
+  on:click={chart.handleGetDataUpdate()}>Refresh</button
 >
