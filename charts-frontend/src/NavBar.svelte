@@ -10,7 +10,7 @@
 
 <div class="list-group-flush py-4">
   <label class="list-group-item text-white bg-dark">
-    <input
+    <!-- <input
       class="form-check-input me-1"
       type="checkbox"
       value=""
@@ -44,14 +44,15 @@
       bind:checked={$soilMoisture.isVisible}
     />
     Soil Moisture
-  </label>
-  <hr />
-  <input
+  </label> -->
+    <hr />
+    <!-- <input
     type="checkbox"
     class="btn-check"
     id="btn-check"
     autocomplete="off"
     bind:checked={$relativeScale}
   />
-  <label class="btn btn-primary" for="btn-check">Toggle Relative Scale</label>
+  <label class="btn btn-primary" for="btn-check">Toggle Relative Scale</label> -->
+  </label>
 </div>
