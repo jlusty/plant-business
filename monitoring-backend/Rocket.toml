@@ -1,2 +1,8 @@
-[default.databases.postgres_timeseries]
-url = "postgres://postgres:nomad@localhost/timeseries"
+[default]
+address = "127.0.0.1"
+port = 8000
+
+[debug]
+databases = { postgres_timeseries = { url = "postgres://postgres:nomad@localhost/timeseries" } }
+
+[release]
