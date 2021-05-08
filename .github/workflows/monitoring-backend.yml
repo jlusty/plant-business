@@ -1,4 +1,4 @@
-name: Rust
+name: Monitoring Backend
 
 on: [push, pull_request]
 
