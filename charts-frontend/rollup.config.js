@@ -56,19 +56,26 @@ export default {
     sourcemap: true,
     format: "iife",
     name: "app",
-    file: "../monitoring-backend/static/build/bundle.js",
+    file: production
+      ? "public/build/bundle.js"
+      : "../monitoring-backend/static/build/bundle.js",
   },
   plugins: [
     // Copy static assets to backend folder
-    watcher(["public/**/*"]),
-    copy({
-      targets: [
-        {
-          src: ["public/**/*"],
-          dest: "../monitoring-backend/static",
-        },
-      ],
-    }),
+    ...(production
+      ? []
+      : [
+          watcher(["public/**/*"]),
+          production ||
+            copy({
+              targets: [
+                {
+                  src: ["public/**/*"],
+                  dest: "../monitoring-backend/static",
+                },
+              ],
+            }),
+        ]),
     svelte({
       preprocess: sveltePreprocess({ sourceMap: !production }),
       compilerOptions: {
