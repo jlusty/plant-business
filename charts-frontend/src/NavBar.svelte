@@ -1,16 +1,10 @@
 <script lang="ts">
-  import {
-    temperature,
-    humidity,
-    light,
-    soilMoisture,
-    relativeScale,
-  } from "./stores";
+  import { temperature } from "./stores";
 </script>
 
 <div class="list-group-flush py-4">
   <label class="list-group-item text-white bg-dark">
-    <!-- <input
+    <input
       class="form-check-input me-1"
       type="checkbox"
       value=""
@@ -18,7 +12,7 @@
     />
     Temperature
   </label>
-  <label class="list-group-item text-white bg-dark">
+  <!-- <label class="list-group-item text-white bg-dark">
     <input
       class="form-check-input me-1"
       type="checkbox"
@@ -45,14 +39,14 @@
     />
     Soil Moisture
   </label> -->
-    <hr />
-    <!-- <input
+  <hr />
+  <!-- <input
     type="checkbox"
     class="btn-check"
     id="btn-check"
     autocomplete="off"
     bind:checked={$relativeScale}
   />
-  <label class="btn btn-primary" for="btn-check">Toggle Relative Scale</label> -->
-  </label>
+  <label class="btn btn-primary" for="btn-check">Toggle Relative Scale</label>
+  </label> -->
 </div>

@@ -3,7 +3,7 @@
   import Chart from "./Chart.svelte";
   import GetDataButton from "./RefreshButton.svelte";
 
-  export let chart;
+  export let chart: Chart;
 </script>
 
 <main>
