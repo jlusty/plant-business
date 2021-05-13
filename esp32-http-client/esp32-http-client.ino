@@ -1,4 +1,6 @@
 #include <WiFi.h>
+#include <WebServer.h>
+#include <uri/UriRegex.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include "DHT.h"
@@ -23,6 +25,9 @@ float soilValue = 0;
 unsigned long dataSentTime = 0;
 unsigned long delayBetweenPOSTs = 10000; // 10 seconds
 
+/* WebServer for dynamic configuration */
+WebServer server(8032);
+
 void setup()
 {
   Serial.begin(115200);
@@ -43,10 +48,24 @@ void setup()
   Serial.println("");
   Serial.print("WiFi connected, IP: ");
   Serial.println(WiFi.localIP());
+
+  server.on(F("/"), []() {
+    server.send(200, "text/plain", "ESP32 healthy!");
+  });
+
+  server.on(UriRegex("^\\/delay\\/([1-9][0-9]*)$"), HTTP_POST, []() {
+    String delaySeconds = server.pathArg(0);
+    delayBetweenPOSTs = delaySeconds.toInt() * 1000;
+    server.send(200, "text/plain", "Set delay to " + String(delayBetweenPOSTs) + "ms");
+  });
+
+  server.begin();
+  Serial.println("HTTP server started");
 }
 
 void loop()
 {
+  server.handleClient();
   delay(5);
 
   if ((millis() - dataSentTime) > delayBetweenPOSTs)
