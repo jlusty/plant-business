@@ -16,7 +16,7 @@ mod schema;
 
 use dotenv::dotenv;
 use rocket::{fairing::AdHoc, http::Method, Build, Rocket};
-use rocket_contrib::{databases::diesel as rocket_diesel, serve::StaticFiles};
+use rocket_contrib::databases::diesel as rocket_diesel;
 use rocket_cors::{Cors, CorsOptions};
 
 // Used to connect Rocket to the PostgreSQL database
@@ -68,34 +68,18 @@ fn rocket() -> _ {
     dotenv().ok();
     let rocket = rocket::build()
         .attach(stage())
-        .attach(cors())
         .mount("/health", routes![health]);
 
-    let static_files_path_param: String = rocket
+    let cors_allow_all: bool = rocket
         .figment()
-        .extract_inner("static_files_path")
-        .expect("Static files path not passed");
-    let static_files_path = match static_files_path_param
-        .chars()
-        .next()
-        .expect("static_files_path should not be empty")
-    {
-        '/' => static_files_path_param,
-        _ => {
-            // Find static files relative to crate
-            // Reimplement crate_relative! macro manually as it doesn't support dynamic strings
-            if cfg!(windows) {
-                format!(
-                    "{}\\{}",
-                    env!("CARGO_MANIFEST_DIR"),
-                    static_files_path_param
-                )
-            } else {
-                format!("{}/{}", env!("CARGO_MANIFEST_DIR"), static_files_path_param)
-            }
-        }
-    };
-    rocket.mount("/", StaticFiles::from(static_files_path))
+        .extract_inner("cors_allow_all")
+        .unwrap_or(false);
+
+    if cors_allow_all {
+        rocket.attach(cors())
+    } else {
+        rocket
+    }
 }
 
 #[get("/")]

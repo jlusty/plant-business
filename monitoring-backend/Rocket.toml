@@ -4,6 +4,6 @@ port = 8000
 
 [debug]
 databases = { postgres_timeseries = { url = "postgres://postgres:nomad@localhost/timeseries" } }
-static_files_path = "static"
+cors_allow_all = true
 
 [release]

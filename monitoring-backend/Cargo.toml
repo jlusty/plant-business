@@ -17,4 +17,4 @@ serde_json = "1.0.64"
 git = "https://github.com/SergioBenitez/Rocket"
 rev = "801e04bd5369eb39e126c75f6d11e1e9597304d8"
 default-features = false
-features = ["diesel_postgres_pool", "json", "serve"]
+features = ["diesel_postgres_pool", "json"]
