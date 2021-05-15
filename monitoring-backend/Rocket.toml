@@ -4,6 +4,5 @@ port = 8000
 
 [debug]
 databases = { postgres_timeseries = { url = "postgres://postgres:nomad@localhost/timeseries" } }
-cors_allow_all = true
 
 [release]

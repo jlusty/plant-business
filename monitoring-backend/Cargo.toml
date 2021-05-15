@@ -6,7 +6,6 @@ edition = "2018"
 [dependencies]
 chrono = "0.4.19"
 rocket = { git = "https://github.com/SergioBenitez/Rocket", rev = "801e04bd5369eb39e126c75f6d11e1e9597304d8" }
-rocket_cors = { git = "https://github.com/lawliet89/rocket_cors", rev = "c0d7b368776648918f337591ad83e749a00a62b5", default-features = false }
 diesel = { version = "1.4.6", features = ["postgres", "chrono"] }
 diesel_migrations = "1.4.0"
 dotenv = "0.15.0"
