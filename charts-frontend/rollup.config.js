@@ -6,7 +6,6 @@ import { terser } from "rollup-plugin-terser";
 import sveltePreprocess from "svelte-preprocess";
 import typescript from "@rollup/plugin-typescript";
 import css from "rollup-plugin-css-only";
-import copy from "rollup-plugin-copy";
 import glob from "glob";
 import path from "path";
 
@@ -56,26 +55,13 @@ export default {
     sourcemap: true,
     format: "iife",
     name: "app",
-    file: production
-      ? "public/build/bundle.js"
-      : "../monitoring-backend/static/build/bundle.js",
+    file: "public/build/bundle.js",
   },
   plugins: [
     // Copy static assets to backend folder
     ...(production
       ? []
-      : [
-          watcher(["public/**/*"]),
-          production ||
-            copy({
-              targets: [
-                {
-                  src: ["public/**/*"],
-                  dest: "../monitoring-backend/static",
-                },
-              ],
-            }),
-        ]),
+      : [watcher(["public/index.html", "public/global.css"])]),
     svelte({
       preprocess: sveltePreprocess({ sourceMap: !production }),
       compilerOptions: {
@@ -102,10 +88,13 @@ export default {
       inlineSources: !production,
     }),
 
+    // In dev mode, call `npm run start` once
+    // the bundle has been generated
+    !production && serve(),
+
     // Watch the `public` directory and refresh the
     // browser on changes when not in production
-    !production &&
-      livereload({ watch: "../monitoring-backend/static", wait: 500 }),
+    !production && livereload("public"),
 
     // If we're building for production (npm run build
     // instead of npm run dev), minify
