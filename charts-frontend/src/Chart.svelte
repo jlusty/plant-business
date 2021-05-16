@@ -15,7 +15,28 @@
   import { temperature, humidity, light, soilMoisture } from "./stores";
   import { getInitialData, getUpdateData } from "./refreshData";
 
-  const CHART_UPDATE_INTERVAL_MS = 10000;
+  let chartUpdateIntervalSecondsAllowedRange = [1, 86400];
+  let chartUpdateIntervalSeconds = 10;
+  $: chartUpdateIntervalMs =
+    Math.min(
+      Math.max(
+        chartUpdateIntervalSecondsAllowedRange[0],
+        chartUpdateIntervalSeconds
+      ),
+      chartUpdateIntervalSecondsAllowedRange[1]
+    ) * 1000;
+
+  let timeoutId: number;
+  const getData = () => {
+    handleGetDataUpdate();
+    timeoutId = setTimeout(getData, chartUpdateIntervalMs);
+  };
+  // Whenever the update interval changes, update the timer
+  const resetDataTimer = (intervalMs: number) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(getData, intervalMs);
+  };
+  $: resetDataTimer(chartUpdateIntervalMs);
 
   Chart.register(
     LineElement,
@@ -122,9 +143,7 @@
       },
     });
 
-    setInterval(() => {
-      handleGetDataUpdate();
-    }, CHART_UPDATE_INTERVAL_MS);
+    getData();
   });
 
   onDestroy(() => {
@@ -147,4 +166,19 @@
 
 <div class="py-4 px-3">
   <canvas bind:this={canvasElement} width={100} height={40} />
+  <form>
+    <div class="input-group">
+      <span class="input-group-text" id="update-frequency"
+        >Update frequency (seconds)</span
+      >
+      <input
+        type="number"
+        class="form-control"
+        aria-describedby="update-frequency"
+        min={chartUpdateIntervalSecondsAllowedRange[0]}
+        max={chartUpdateIntervalSecondsAllowedRange[1]}
+        bind:value={chartUpdateIntervalSeconds}
+      />
+    </div>
+  </form>
 </div>
