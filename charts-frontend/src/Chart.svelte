@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { beforeUpdate, onDestroy, onMount } from "svelte";
+  import { onDestroy, onMount } from "svelte";
   import { enGB } from "date-fns/locale";
   import "chartjs-adapter-date-fns";
   import {
@@ -14,7 +14,7 @@
   } from "chart.js";
   import { getInitialData, getUpdateData } from "./refreshData";
   import type { TimeseriesData } from "./refreshData";
-  import { relativeScale } from "./stores";
+  import { pollForUpdates, relativeScale } from "./stores";
 
   let chartUpdateIntervalSecondsAllowedRange = [1, 86400];
   let chartUpdateIntervalSeconds = 10;
@@ -33,11 +33,13 @@
     timeoutId = setTimeout(refreshData, chartUpdateIntervalMs);
   };
   // Whenever the update interval changes, update the timer
-  const resetDataTimer = (intervalMs: number) => {
+  const resetDataTimer = (pollForUpdates: boolean, intervalMs: number) => {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(refreshData, intervalMs);
+    if (pollForUpdates) {
+      timeoutId = setTimeout(refreshData, intervalMs);
+    }
   };
-  $: resetDataTimer(chartUpdateIntervalMs);
+  $: resetDataTimer($pollForUpdates, chartUpdateIntervalMs);
 
   Chart.register(
     LineElement,
@@ -147,7 +149,9 @@
       },
     });
 
-    refreshData();
+    if ($pollForUpdates) {
+      refreshData();
+    }
   });
 
   onDestroy(() => {
