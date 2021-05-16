@@ -12,8 +12,7 @@
     Tooltip,
     Legend,
   } from "chart.js";
-  import { temperature, humidity, light, soilMoisture } from "./stores";
-  import { getInitialData, getUpdateData } from "./refreshData";
+  import { getInitialData, getUpdateData, TimeseriesData } from "./refreshData";
 
   let chartUpdateIntervalSecondsAllowedRange = [1, 86400];
   let chartUpdateIntervalSeconds = 10;
@@ -27,14 +26,14 @@
     ) * 1000;
 
   let timeoutId: number;
-  const getData = () => {
+  const refreshData = () => {
     handleGetDataUpdate();
-    timeoutId = setTimeout(getData, chartUpdateIntervalMs);
+    timeoutId = setTimeout(refreshData, chartUpdateIntervalMs);
   };
   // Whenever the update interval changes, update the timer
   const resetDataTimer = (intervalMs: number) => {
     clearTimeout(timeoutId);
-    timeoutId = setTimeout(getData, intervalMs);
+    timeoutId = setTimeout(refreshData, intervalMs);
   };
   $: resetDataTimer(chartUpdateIntervalMs);
 
@@ -49,36 +48,28 @@
   );
   Chart.overrides.line.spanGaps = true;
 
-  const getDatasets = (data: Record<string, any>) => [
+  const getDatasets = (data: Record<string, TimeseriesData[]>) => [
     {
       label: "Temperature",
-      name: "temperature",
       data: data.temperature,
-      isVisible: $temperature.isVisible,
       fill: false,
       borderColor: "rgb(75, 192, 192)",
     },
     {
       label: "Humidity",
-      name: "humidity",
       data: data.humidity,
-      isVisible: $humidity.isVisible,
       fill: false,
       borderColor: "rgb(0, 0, 192)",
     },
     {
       label: "Light",
-      name: "light",
       data: data.light,
-      isVisible: $light.isVisible,
       fill: false,
       borderColor: "rgb(0, 192, 0)",
     },
     {
       label: "Soil moisture",
-      name: "soilMoisture",
       data: data.soilMoisture,
-      isVisible: $soilMoisture.isVisible,
       fill: false,
       borderColor: "rgb(192, 0, 0)",
     },
@@ -86,7 +77,6 @@
 
   // $: data = {
   //   datasets: datasets
-  //     .filter((d) => d.isVisible)
   //     .map(({ isVisible, ...d }) => {
   //       if ($relativeScale) {
   //         const dataPoints: number[] = d.data.map(({ data }) => data);
@@ -103,15 +93,14 @@
   // };
 
   let canvasElement: HTMLCanvasElement;
-  let chart: Chart = null;
+  let chart: Chart<"line", TimeseriesData[]> = null;
   let maxTimestamp: string;
   onMount(async () => {
     const data = { datasets: getDatasets(await getInitialData()) };
     maxTimestamp = data.datasets
       .map((dataset) => dataset.data[dataset.data.length - 1])
       .sort((a, b) => b.time.localeCompare(a.time))[0].time;
-    console.log(data);
-    console.log(maxTimestamp);
+
     chart = new Chart(canvasElement, {
       type: "line",
       data,
@@ -143,23 +132,23 @@
       },
     });
 
-    getData();
+    refreshData();
   });
 
   onDestroy(() => {
     chart = null;
+    clearTimeout(timeoutId);
   });
 
   export const handleGetDataUpdate = async () => {
     const dataUpdate = await getUpdateData(maxTimestamp);
     for (const dataset of chart.data.datasets) {
-      dataset.data.push(...dataUpdate[(<any>dataset).name]);
+      dataset.data.push(...dataUpdate[dataset.label]);
     }
-    const maxData: any = chart.data.datasets
+    const maxData = chart.data.datasets
       .map((dataset) => dataset.data[dataset.data.length - 1])
-      .sort((a, b) => (<any>b).time.localeCompare((<any>a).time))[0];
+      .sort((a, b) => b.time.localeCompare(a.time))[0];
     maxTimestamp = maxData.time;
-    console.log(maxTimestamp);
     chart.update();
   };
 </script>
