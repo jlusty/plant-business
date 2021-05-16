@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from "svelte";
+  import { beforeUpdate, onDestroy, onMount } from "svelte";
   import { enGB } from "date-fns/locale";
   import "chartjs-adapter-date-fns";
   import {
@@ -12,7 +12,9 @@
     Tooltip,
     Legend,
   } from "chart.js";
-  import { getInitialData, getUpdateData, TimeseriesData } from "./refreshData";
+  import { getInitialData, getUpdateData } from "./refreshData";
+  import type { TimeseriesData } from "./refreshData";
+  import { relativeScale } from "./stores";
 
   let chartUpdateIntervalSecondsAllowedRange = [1, 86400];
   let chartUpdateIntervalSeconds = 10;
@@ -75,22 +77,35 @@
     },
   ];
 
-  // $: data = {
-  //   datasets: datasets
-  //     .map(({ isVisible, ...d }) => {
-  //       if ($relativeScale) {
-  //         const dataPoints: number[] = d.data.map(({ data }) => data);
-  //         const maxValue = Math.max(...dataPoints);
-  //         const minValue = Math.min(...dataPoints);
-  //         const divisor = maxValue === minValue ? 1 : maxValue - minValue;
-  //         d.data = d.data.map(({ time, data }) => ({
-  //           time,
-  //           data: (data - minValue) / divisor,
-  //         }));
-  //       }
-  //       return d;
-  //     }),
-  // };
+  const addRelativeData = (data: TimeseriesData[]) => {
+    const dataPoints: number[] = data.map(({ data }) => data);
+    const maxValue = Math.max(...dataPoints);
+    const minValue = Math.min(...dataPoints);
+    const divisor = maxValue === minValue ? 1 : maxValue - minValue;
+    for (let dataPoint of data) {
+      dataPoint.relativeData = (dataPoint.data - minValue) / divisor;
+    }
+  };
+
+  $: updateChartData($relativeScale);
+
+  const updateChartData = (relativeScale: boolean) => {
+    if (!chart) return;
+    if (!relativeScale) {
+      if (chart.options.parsing["yAxisKey"] !== "data") {
+        chart.options.parsing["yAxisKey"] = "data";
+        chart.update();
+      }
+    } else {
+      for (const dataset of chart.data.datasets) {
+        addRelativeData(dataset.data);
+      }
+      if (chart.options.parsing["yAxisKey"] !== "relativeData") {
+        chart.options.parsing["yAxisKey"] = "relativeData";
+        chart.update();
+      }
+    }
+  };
 
   let canvasElement: HTMLCanvasElement;
   let chart: Chart<"line", TimeseriesData[]> = null;

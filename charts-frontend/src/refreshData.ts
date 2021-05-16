@@ -1,6 +1,7 @@
 export interface TimeseriesData {
   time: string;
   data: number;
+  relativeData?: number;
 }
 
 export const getInitialData = async () => {
@@ -51,7 +52,7 @@ export const getUpdateData = async (time: string) => {
     fetch(`/db/data/soilmoisture/${time}`)
       .then((res) => res.json())
       .then((res) => {
-        data["Soil Moisture"] = res.soil_moisture;
+        data["Soil moisture"] = res.soil_moisture;
       }),
   ]);
   return data;
