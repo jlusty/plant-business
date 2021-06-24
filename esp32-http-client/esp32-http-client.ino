@@ -3,6 +3,7 @@
 #include <uri/UriRegex.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
+#include <Preferences.h>
 #include "DHT.h"
 #include "NetworkingConfig.h"
 
@@ -28,9 +29,21 @@ unsigned long delayBetweenPOSTs = 10000; // 10 seconds
 /* WebServer for dynamic configuration */
 WebServer server(8032);
 
+/* Preferences Library, used to persist data to non-volatile storage */
+Preferences preferences;
+
 void setup()
 {
   Serial.begin(115200);
+
+  // Open nvs storage for a given namespace, read-only mode
+  preferences.begin("plant-business", true);
+  // Load from nvs, default to 10 seconds if not found
+  delayBetweenPOSTs = preferences.getULong("post-delay", 10000);
+  preferences.end();
+  Serial.print("Delay between data POSTs: ");
+  Serial.print(delayBetweenPOSTs);
+  Serial.println(" ms");
 
   // Temp, Humidity
   dht.begin();
@@ -56,6 +69,13 @@ void setup()
   server.on(UriRegex("^\\/delay\\/([1-9][0-9]*)$"), HTTP_POST, []() {
     String delaySeconds = server.pathArg(0);
     delayBetweenPOSTs = delaySeconds.toInt() * 1000;
+
+    // Persist to non-volatile storage
+    preferences.begin("plant-business", false);
+    preferences.putULong("post-delay", delayBetweenPOSTs);
+    preferences.end();
+
+    Serial.println("Set delay to " + String(delayBetweenPOSTs) + "ms");
     server.send(200, "text/plain", "Set delay to " + String(delayBetweenPOSTs) + "ms");
   });
 
