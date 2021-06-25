@@ -53,13 +53,13 @@
   let timeoutId: number;
   const refreshData = () => {
     handleGetDataUpdate();
-    timeoutId = setTimeout(refreshData, chartUpdateIntervalMs);
+    timeoutId = window.setTimeout(refreshData, chartUpdateIntervalMs);
   };
   // Whenever the update interval changes, update the timer
   const resetDataTimer = (pollForUpdates: boolean, intervalMs: number) => {
     clearTimeout(timeoutId);
     if (pollForUpdates) {
-      timeoutId = setTimeout(refreshData, intervalMs);
+      timeoutId = window.setTimeout(refreshData, intervalMs);
     }
   };
   $: resetDataTimer($pollForUpdates, chartUpdateIntervalMs);
