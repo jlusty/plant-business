@@ -37,15 +37,15 @@
     chartStartDate === ""
       ? undefined
       : +new Date(
-          `${chartStartDate}${
-            chartStartTime === "" ? "" : " "
-          }${chartStartTime}`
+          `${chartStartDate} ${
+            chartStartTime === "" ? "00:00:00" : chartStartTime
+          }`
         );
   $: chartMax =
-    chartStartDate === ""
+    chartEndDate === ""
       ? undefined
       : +new Date(
-          `${chartEndDate}${chartEndTime === "" ? "" : " "}${chartEndTime}`
+          `${chartEndDate} ${chartEndTime === "" ? "23:59:59" : chartEndTime}`
         );
 
   $: updateChartScale(chartMin, chartMax);
