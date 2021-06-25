@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onDestroy, onMount } from "svelte";
   import { enGB } from "date-fns/locale";
+  import { format } from "date-fns";
   import "chartjs-adapter-date-fns";
   import {
     Chart,
@@ -26,6 +27,28 @@
       ),
       chartUpdateIntervalSecondsAllowedRange[1]
     ) * 1000;
+
+  let chartStartDate: string = "";
+  let chartStartTime: string = "";
+  let chartEndDate: string = "";
+  let chartEndTime: string = "";
+
+  $: chartMin =
+    chartStartDate === ""
+      ? undefined
+      : +new Date(
+          `${chartStartDate}${
+            chartStartTime === "" ? "" : " "
+          }${chartStartTime}`
+        );
+  $: chartMax =
+    chartStartDate === ""
+      ? undefined
+      : +new Date(
+          `${chartEndDate}${chartEndTime === "" ? "" : " "}${chartEndTime}`
+        );
+
+  $: updateChartScale(chartMin, chartMax);
 
   let timeoutId: number;
   const refreshData = () => {
@@ -109,14 +132,39 @@
     }
   };
 
+  const updateChartScale = (
+    chartMin: number | undefined,
+    chartMax: number | undefined
+  ) => {
+    if (!chart) return;
+    if (chartMin) {
+      chart.options.scales.x.min = chartMin;
+    }
+    if (chartMax) {
+      chart.options.scales.x.max = chartMax;
+    }
+    chart.update();
+  };
+
   let canvasElement: HTMLCanvasElement;
   let chart: Chart<"line", TimeseriesData[]> = null;
   let maxTimestamp: string;
   onMount(async () => {
     const data = { datasets: getDatasets(await getInitialData()) };
     maxTimestamp = data.datasets
-      .map((dataset) => dataset.data[dataset.data.length - 1])
-      .sort((a, b) => b.time.localeCompare(a.time))[0].time;
+      .map((dataset) => dataset.data[dataset.data.length - 1]) // Get last data point for each data set
+      .sort((a, b) => b.time.localeCompare(a.time))[0].time; // Get last data point across data sets
+
+    const minTimestamp = data.datasets
+      .map((dataset) => dataset.data[0])
+      .sort((a, b) => a.time.localeCompare(b.time))[0].time;
+
+    const chartStart = new Date(minTimestamp);
+    chartStartDate = format(chartStart, "yyyy-MM-dd");
+    chartStartTime = format(chartStart, "HH:mm:ss");
+    const chartEnd = new Date(new Date(maxTimestamp).getTime() + 1000); // Add 1 second to ensure end included on chart
+    chartEndDate = format(chartEnd, "yyyy-MM-dd");
+    chartEndTime = format(chartEnd, "HH:mm:ss");
 
     chart = new Chart(canvasElement, {
       type: "line",
@@ -186,6 +234,42 @@
         min={chartUpdateIntervalSecondsAllowedRange[0]}
         max={chartUpdateIntervalSecondsAllowedRange[1]}
         bind:value={chartUpdateIntervalSeconds}
+      />
+    </div>
+    <div class="input-group">
+      <span class="input-group-text" id="chart-start-date"
+        >Chart start date</span
+      >
+      <input
+        type="date"
+        class="form-control"
+        aria-describedby="chart-start-date"
+        bind:value={chartStartDate}
+      />
+      <span class="input-group-text" id="chart-start-time"
+        >Chart start time</span
+      >
+      <input
+        type="time"
+        step="1"
+        class="form-control"
+        aria-describedby="chart-start-time"
+        bind:value={chartStartTime}
+      />
+      <span class="input-group-text" id="chart-end-date">Chart end date</span>
+      <input
+        type="date"
+        class="form-control"
+        aria-describedby="chart-end-date"
+        bind:value={chartEndDate}
+      />
+      <span class="input-group-text" id="chart-end-time">Chart end time</span>
+      <input
+        type="time"
+        step="1"
+        class="form-control"
+        aria-describedby="chart-end-time"
+        bind:value={chartEndTime}
       />
     </div>
   </form>
