@@ -4,7 +4,9 @@ export interface TimeseriesData {
   relativeData?: number;
 }
 
-export const getInitialData = async () => {
+let initialData: Record<string, TimeseriesData[]>;
+
+export const fetchInitialData = async () => {
   const data: Record<string, TimeseriesData[]> = {};
   await Promise.all([
     fetch("/db/data/temperature")
@@ -29,6 +31,13 @@ export const getInitialData = async () => {
       }),
   ]);
   return data;
+};
+
+export const getInitialData = async () => {
+  if (!initialData) {
+    initialData = await fetchInitialData();
+  }
+  return initialData;
 };
 
 export const getUpdateData = async (time: string) => {
