@@ -137,12 +137,8 @@
     chartMax: number | undefined
   ) => {
     if (!chart) return;
-    if (chartMin) {
-      chart.options.scales.x.min = chartMin;
-    }
-    if (chartMax) {
-      chart.options.scales.x.max = chartMax;
-    }
+    chart.options.scales.x.min = chartMin;
+    chart.options.scales.x.max = chartMax;
     chart.update();
   };
 
