@@ -5,11 +5,11 @@ use crate::{
 };
 use chrono::DateTime;
 use diesel::{prelude::*, result::Error as DieselError};
+use rocket::serde::json::Json;
 use rocket::{
     response::{status::Created, Debug},
     Route,
 };
-use rocket_contrib::json::Json;
 
 type Result<T, E = Debug<diesel::result::Error>> = std::result::Result<T, E>;
 

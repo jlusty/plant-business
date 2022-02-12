@@ -5,8 +5,8 @@ use crate::{
 };
 use chrono::{DateTime, NaiveDateTime};
 use diesel::prelude::*;
+use rocket::serde::json::Json;
 use rocket::Route;
-use rocket_contrib::json::Json;
 
 // TODO: Reduce code duplication
 #[get("/temperature")]

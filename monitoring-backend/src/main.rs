@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate rocket;
 #[macro_use]
-extern crate rocket_contrib;
+extern crate rocket_sync_db_pools;
 #[macro_use]
 extern crate diesel;
 #[macro_use]
@@ -16,7 +16,7 @@ mod schema;
 
 use dotenv::dotenv;
 use rocket::{fairing::AdHoc, Build, Rocket};
-use rocket_contrib::databases::diesel as rocket_diesel;
+use rocket_sync_db_pools::diesel as rocket_diesel;
 
 // Used to connect Rocket to the PostgreSQL database
 #[database("postgres_timeseries")]
